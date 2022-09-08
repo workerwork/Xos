@@ -1,0 +1,20 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2021"
+authors = ["workerwork <workerwork@qq.com>"]
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# structopt = "0.3"
+clap = { version = "3.2", features = ["derive"] }
+dotenv = "0.15"
+
+# 在 riscv64 std 下支持不好
+[target.'cfg(not(target_arch = "riscv64"))'.dependencies]
+shadow-rs = "0.16"
+
+[target.'cfg(not(target_arch = "riscv64"))'.build-dependencies]
+shadow-rs = "0.16"
