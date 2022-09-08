@@ -1,8 +1,9 @@
 // #![deny(warnings, missing_docs, unsafe_code)]
+#![allow(unused)]
+
 #[macro_use]
 extern crate clap;
 use clap::Parser;
-
 
 #[path = "actions/shadow.rs"]
 mod shadow;
