@@ -1,11 +1,8 @@
-// use std::process::Command;
-use std::{env, fs, net::Ipv4Addr, process::Output};
+use std::{env, fs, net::Ipv4Addr};
 
 use cmd_lib::{run_cmd, run_fun};
 
-#[path = "../constant.rs"]
-mod constant;
-use constant::{DNS_CONF, OUTPUT, PROXY_PORT, PROXY_TYPE};
+use super::constant::{DNS_CONF, OUTPUT, PROXY_PORT, PROXY_TYPE};
 
 #[derive(Args)]
 pub(crate) struct Proxy {
@@ -35,16 +32,22 @@ impl Proxy {
             })
             .expect("FAILED: detect DNS");
         let proxy = format!("{PROXY_TYPE}://{dns}:{port}");
-        run_cmd!(git config --global http.proxy $proxy >> $OUTPUT);
+        if let Err(e) = run_cmd!(git config --global http.proxy $proxy >> $OUTPUT) {
+            log::error!("{e}");
+        }
         let proxy = format!("{PROXY_TYPE}s://{dns}:{port}");
-        run_cmd!(git config --global https.proxy $proxy >> $OUTPUT);
+        if let Err(e) = run_cmd!(git config --global https.proxy $proxy >> $OUTPUT) {
+            log::error!("{e}");
+        }
     }
 
     /// unset git proxy
     pub(crate) fn unset(&self) {
-        run_cmd!(
+        if let Err(e) = run_cmd!(
             git config --global --unset http.proxy >> $OUTPUT;
             git config --global --unset https.proxy >> $OUTPUT;
-        );
+        ) {
+            log::error!("{e}");
+        }
     }
 }

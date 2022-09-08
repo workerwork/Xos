@@ -5,6 +5,8 @@
 extern crate clap;
 use clap::Parser;
 
+mod constant;
+
 #[path = "actions/shadow.rs"]
 mod shadow;
 
@@ -26,7 +28,10 @@ enum Commands {
 }
 
 fn main() {
+    // 解析环境变量
     dotenv::dotenv().ok();
+    // 设置 log
+    log4rs::init_file(constant::CONFIG, Default::default()).unwrap();
     use Commands::*;
     match Cli::parse().command {
         GitProxy(proxy) => {
