@@ -2,17 +2,17 @@ use std::{env, fs, net::Ipv4Addr};
 
 use cmd_lib::{run_cmd, run_fun};
 
-use super::constant::{DNS_CONF, OUTPUT, PROXY_PORT, PROXY_TYPE};
+use super::constants::{DNS_CONF, OUTPUT, PROXY_PORT, PROXY_TYPE};
 
 #[derive(Args)]
-pub(crate) struct Proxy {
+pub(crate) struct ProxyArgs {
     #[clap(short, long)]
     port: Option<u16>,
     #[clap(long)]
     pub unset: bool,
 }
 
-impl Proxy {
+impl ProxyArgs {
     /// set git proxy
     pub(crate) fn set(&self) {
         let port = if let Some(port) = self.port {

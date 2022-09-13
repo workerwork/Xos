@@ -1,3 +1,4 @@
+// debug 时关闭，release 时打开
 // #![deny(warnings, missing_docs, unsafe_code)]
 #![allow(unused)]
 
@@ -5,14 +6,25 @@
 extern crate clap;
 use clap::Parser;
 
-mod constant;
+// 常量定义
+mod constants;
 
+// 编译环境信息
 #[path = "actions/shadow.rs"]
 mod shadow;
 
+// proxy 代理设置
 #[path = "actions/git_proxy.rs"]
 mod git_proxy;
-use git_proxy::Proxy;
+use git_proxy::ProxyArgs;
+
+// qemu 模拟器
+#[path = "actions/qemu.rs"]
+mod qemu;
+use qemu::QemuArgs;
+
+// 错误定义
+mod errors;
 
 #[derive(Parser)]
 #[clap(name = "Xos Configure")]
@@ -24,23 +36,30 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    GitProxy(Proxy),
+    GitProxy(ProxyArgs),
+    Qemu(QemuArgs),
 }
 
 fn main() {
     // 解析环境变量
     dotenv::dotenv().ok();
+
     // 设置 log
-    log4rs::init_file(constant::CONFIG, Default::default()).unwrap();
+    log4rs::init_file(constants::CONFIG, Default::default()).unwrap();
+
+    // 解析命令参数，调处理函数
     use Commands::*;
     match Cli::parse().command {
-        GitProxy(proxy) => {
-            if proxy.unset == true {
-                proxy.unset();
+        GitProxy(proxy_args) => {
+            if proxy_args.unset == true {
+                proxy_args.unset();
             } else {
-                proxy.set();
+                proxy_args.set();
             }
             // shadow::shadow_config();
+        }
+        Qemu(qemu_args) => {
+            unimplemented!()
         }
     }
 }
