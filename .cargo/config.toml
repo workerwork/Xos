@@ -1,3 +1,4 @@
 [alias]
 xtask = "run --package xtask --release --"
 git-proxy = "xtask git-proxy"
+qemu = "xtask qemu"

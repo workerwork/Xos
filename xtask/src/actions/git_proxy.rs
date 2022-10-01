@@ -1,8 +1,6 @@
 use std::{env, fs, net::Ipv4Addr};
 
-use cmd_lib::{run_cmd, run_fun};
-
-use super::constants::{DNS_CONF, OUTPUT, PROXY_PORT, PROXY_TYPE};
+use super::constants::{DNS_CONF, OUTPUT, PROXY_TYPE};
 
 #[derive(Args)]
 pub(crate) struct ProxyArgs {
@@ -18,10 +16,10 @@ impl ProxyArgs {
         let port = if let Some(port) = self.port {
             port
         } else {
-            env::var(PROXY_PORT)
-                .expect("PROXY_PORT must be set")
+            env::var("PROXY_PORT")
+                .expect("proxy port must be set")
                 .parse::<u16>()
-                .unwrap()
+                .expect("proxy port parse error!")
         };
         let dns = fs::read_to_string(DNS_CONF)
             .unwrap()
@@ -32,18 +30,18 @@ impl ProxyArgs {
             })
             .expect("FAILED: detect DNS");
         let proxy = format!("{PROXY_TYPE}://{dns}:{port}");
-        if let Err(e) = run_cmd!(git config --global http.proxy $proxy >> $OUTPUT) {
-            log::error!("{e}");
-        }
+        cmd_lib::run_cmd!(git config --global http.proxy $proxy >> $OUTPUT)
+            .map(|_| println!("git proxy: {proxy}"))
+            .unwrap();
         let proxy = format!("{PROXY_TYPE}s://{dns}:{port}");
-        if let Err(e) = run_cmd!(git config --global https.proxy $proxy >> $OUTPUT) {
-            log::error!("{e}");
-        }
+        cmd_lib::run_cmd!(git config --global https.proxy $proxy >> $OUTPUT)
+            .map(|_| println!("git proxy: {proxy}"))
+            .unwrap();
     }
 
     /// unset git proxy
     pub(crate) fn unset(&self) {
-        if let Err(e) = run_cmd!(
+        if let Err(e) = cmd_lib::run_cmd!(
             git config --global --unset http.proxy >> $OUTPUT;
             git config --global --unset https.proxy >> $OUTPUT;
         ) {

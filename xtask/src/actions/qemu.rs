@@ -1,10 +1,13 @@
+use std::env;
 use std::str::FromStr;
 
+use super::arch::*;
+use super::constants::*;
 use super::errors::XError;
 
-
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub(crate) struct QemuArgs {
+    /// Build args.
     #[clap(flatten)]
     build: BuildArgs,
     /// Number of hart (SMP for Symmetrical Multiple Processor).
@@ -15,7 +18,7 @@ pub(crate) struct QemuArgs {
     gdb: Option<u16>,
 }
 
-#[derive(Clone, Args)]
+#[derive(Clone, Args, Debug)]
 pub(crate) struct BuildArgs {
     #[clap(flatten)]
     pub arch: ArchArg,
@@ -26,33 +29,43 @@ pub(crate) struct BuildArgs {
     pub features: Option<String>,
 }
 
-#[derive(Copy, Clone, Args)]
+#[derive(Copy, Clone, Args, Debug)]
 pub(crate) struct ArchArg {
-    /// Build architecture, `riscv64` or `x86_64`.
+    /// Build architecture, `riscv64` | `x86_64` | `aarch64`.
     #[clap(short, long)]
-    pub arch: Arch,
+    pub arch: Option<Arch>,
 }
 
-/// 支持的 CPU 架构。
-#[derive(Copy, Clone)]
-pub(crate) enum Arch {
-    Riscv64,
-    X86_64,
-    Aarch64,
+impl BuildArgs {
+    #[inline]
+    fn arch(&self) -> Option<Arch> {
+        self.arch.arch
+    }
 }
 
-impl FromStr for Arch {
-    type Err = XError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "riscv64" => Ok(Self::Riscv64),
-            "x86_64" => Ok(Self::X86_64),
-            "aarch64" => Ok(Self::Aarch64),
-            _ => Err(XError::EnumParse {
-                _type: "Arch",
-                value: s.into(),
-            }),
-        }
+impl QemuArgs {
+    pub fn qemu(&self) {
+        let arch = match self.build.arch() {
+            Some(arch) => arch.name().to_owned(),
+            None => env::var("ARCH").unwrap(),
+        };
+        let smp = match self.smp {
+            Some(smp) => smp.to_string(),
+            None => env::var("SMP").unwrap(),
+        };
+        #[rustfmt::skip]
+        cmd_lib::run_cmd!(
+            qemu-system-$arch
+            -machine virt
+            -smp $smp
+            -bios default
+            -kernel zcore.bin
+            -initrd riscv64.img
+            -append LOG=warn
+            -serial mon:stdio
+            -display none
+            -no-reboot
+            -nographic
+        );
     }
 }

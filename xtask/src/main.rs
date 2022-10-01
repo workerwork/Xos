@@ -26,6 +26,9 @@ use qemu::QemuArgs;
 // 错误定义
 mod errors;
 
+/// arch
+mod arch;
+
 #[derive(Parser)]
 #[clap(name = "Xos Configure")]
 #[clap(version, about, long_about = None)]
@@ -36,7 +39,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// git proxy
     GitProxy(ProxyArgs),
+    /// qemu
     Qemu(QemuArgs),
 }
 
@@ -59,7 +64,8 @@ fn main() {
             // shadow::shadow_config();
         }
         Qemu(qemu_args) => {
-            unimplemented!()
+            // println!("{qemu_args:#?}");
+            qemu_args.qemu();
         }
     }
 }
