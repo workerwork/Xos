@@ -1,6 +1,9 @@
 // 日志配置文件路径
 pub const CONFIG: &'static str = "xtask/config/log4rs.yml";
 
+// .env 路径
+pub const ENV_PATH: &str = "xtask/.env";
+
 // 默认输出终端
 pub const OUTPUT: &str = "/dev/tty";
 

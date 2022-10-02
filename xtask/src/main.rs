@@ -8,6 +8,7 @@ use clap::Parser;
 
 // 常量定义
 mod constants;
+use constants::ENV_PATH;
 
 // 编译环境信息
 #[path = "actions/shadow.rs"]
@@ -47,7 +48,8 @@ enum Commands {
 
 fn main() {
     // 解析环境变量
-    dotenv::dotenv().ok();
+    // dotenv::dotenv().ok();
+    dotenv::from_path(ENV_PATH).ok();
 
     // 设置 log
     log4rs::init_file(constants::CONFIG, Default::default()).unwrap();
@@ -63,9 +65,6 @@ fn main() {
             }
             // shadow::shadow_config();
         }
-        Qemu(qemu_args) => {
-            // println!("{qemu_args:#?}");
-            qemu_args.qemu();
-        }
+        Qemu(qemu_args) => qemu_args.qemu(),
     }
 }
