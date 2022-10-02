@@ -4,3 +4,4 @@
 
 /target
 /xtask/log
+Cargo.lock
